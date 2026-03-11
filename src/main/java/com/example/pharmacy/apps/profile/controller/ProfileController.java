@@ -6,6 +6,7 @@ import com.example.pharmacy.apps.profile.dto.request.ProfileRequestDto;
 import com.example.pharmacy.apps.profile.service.ProfilePhotoService;
 import com.example.pharmacy.apps.profile.service.ProfileService;
 import com.example.pharmacy.apps.users.dto.response.UserDetailsResponseDto;
+import com.example.pharmacy.apps.users.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,18 +23,15 @@ public class ProfileController {
 
     private final ProfileService profileService;
     private final ProfilePhotoService profilePhotoService;
+    private final UserService userService;
 
-    @PostMapping("/profile")
-    public ResponseEntity<ApiResponseDto<UserDetailsResponseDto>> createProfile(
-            @RequestBody ProfileRequestDto requestDto,
-            @AuthenticationPrincipal Jwt jwt){
-        UserDetailsResponseDto responseDto = profileService.createProfile(requestDto, jwt);
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(new ApiResponseDto<>("Profile created", responseDto));
+    @GetMapping("/profiles/me")
+    public ResponseEntity<ApiResponseDto<UserDetailsResponseDto>> getUser(@AuthenticationPrincipal Jwt jwt){
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(new ApiResponseDto<>("User Details", userService.getUser(jwt)));
     }
 
-    @PutMapping("/profile")
+    @PutMapping("/profiles/me")
     public ResponseEntity<ApiResponseDto<UserDetailsResponseDto>> updateProfile(
             @RequestBody ProfileRequestDto requestDto,
             @AuthenticationPrincipal Jwt jwt){
@@ -44,7 +42,7 @@ public class ProfileController {
     }
 
 
-    @PostMapping("/profile/photo")
+    @PostMapping("/profiles/me/photo")
     public ResponseEntity<ApiResponseDto<UserDetailsResponseDto>> uploadProfile(
             @RequestParam("file") MultipartFile file,
             @AuthenticationPrincipal Jwt jwt

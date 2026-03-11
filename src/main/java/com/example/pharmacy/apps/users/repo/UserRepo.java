@@ -1,6 +1,7 @@
 package com.example.pharmacy.apps.users.repo;
 
 import com.example.pharmacy.apps.users.model.User;
+import org.jspecify.annotations.NonNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -14,5 +15,7 @@ public interface UserRepo extends JpaRepository<User, UUID> {
 
     Optional<User> findByKeyCloakId(String keyCloakId);
 
-    Page<User> findAll(Pageable pageable);
+    Boolean existsByKeyCloakId(String keyCloakId);
+
+    Page<User> findAll(@NonNull Pageable pageable);
 }

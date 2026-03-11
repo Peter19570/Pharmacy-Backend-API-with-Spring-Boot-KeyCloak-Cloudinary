@@ -30,26 +30,6 @@ public class ProfileService {
     private final UserState userState;
     private final UserMapper userMapper;
 
-    @Transactional
-    public UserDetailsResponseDto createProfile(
-            ProfileRequestDto requestDto,Jwt jwt){
-        User user = userState.getOrCreateUser(jwt);
-        Profile profile = profileMapper.toEntity(requestDto);
-
-        ProfilePhoto profilePhoto = new ProfilePhoto();
-
-        user.setProfile(profile);
-        profile.setUser(user);
-
-        profile.setProfilePhoto(profilePhoto);
-        profilePhoto.setProfile(profile);
-
-        profilePhotoRepo.saveAndFlush(profilePhoto);
-        profileRepo.saveAndFlush(profile);
-        userRepo.saveAndFlush(user);
-
-        return userMapper.toDetailsDto(user);
-    }
 
     @Transactional
     public UserDetailsResponseDto updateUser(Jwt jwt, ProfileRequestDto requestDto){

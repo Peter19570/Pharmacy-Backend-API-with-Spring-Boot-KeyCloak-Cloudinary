@@ -14,10 +14,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/users")
@@ -36,9 +33,5 @@ public class UserController {
                 .body(new ApiResponseDto<>("All users", userService.allUsers(pageable)));
     }
 
-    @GetMapping("/profile/me")
-    public ResponseEntity<ApiResponseDto<UserDetailsResponseDto>> getUser(@AuthenticationPrincipal Jwt jwt){
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(new ApiResponseDto<>("User Details", userService.getUser(jwt)));
-    }
+
 }

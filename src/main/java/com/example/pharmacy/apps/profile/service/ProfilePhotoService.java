@@ -38,7 +38,8 @@ public class ProfilePhotoService {
         ProfilePhoto profilePhoto = profilePhotoRepo.findByProfile(profile)
                 .orElseThrow(()-> new NotFoundException("Profile not found"));
 
-        CloudinaryResponseDto responseDto = cloudinaryService.upload(file, "user_profile_photos");
+        CloudinaryResponseDto responseDto = cloudinaryService
+                .upload(file, "user_profile_photos");
 
         profilePhoto.setUrl(responseDto.url());
         profilePhoto.setPublicId(responseDto.publicId());

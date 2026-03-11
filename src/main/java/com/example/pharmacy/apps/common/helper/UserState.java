@@ -13,17 +13,6 @@ import org.springframework.stereotype.Component;
 public class UserState {
 
     private final UserRepo userRepo;
-    private final UserMapper userMapper;
-
-    public User getOrCreateUser(Jwt jwt){
-        String authToken = String.valueOf(jwt.getSubject());
-        User user = userMapper.toEntity(jwt);
-        return userRepo.findByKeyCloakId(authToken)
-                .orElseGet(()-> {
-                    user.setKeyCloakId(authToken);
-                    return userRepo.save(user);
-                });
-    }
 
     public User getCurrentUser(Jwt jwt){
         return userRepo.findByKeyCloakId(jwt.getSubject())

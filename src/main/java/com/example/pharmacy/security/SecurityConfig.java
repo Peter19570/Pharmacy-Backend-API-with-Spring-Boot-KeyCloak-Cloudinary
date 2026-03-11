@@ -1,6 +1,8 @@
 package com.example.pharmacy.security;
 
 
+import com.example.pharmacy.apps.users.service.UserService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
@@ -18,7 +20,10 @@ import org.springframework.security.web.SecurityFilterChain;
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
+
+    private final UserService userService;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity security) throws Exception{
@@ -33,8 +38,10 @@ public class SecurityConfig {
                                 "/swagger-ui/**").permitAll()
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(oauth -> oauth
-                        .jwt(jwt-> jwt
-                                .jwtAuthenticationConverter(customJwtConverter())))
+                        .jwt(jwtCustomizer -> jwtCustomizer
+                                .jwtAuthenticationConverter(jwt -> {
+                                    userService.createUser(jwt);
+                                return customJwtConverter().convert(jwt);})))
                 .build();
     }
 
