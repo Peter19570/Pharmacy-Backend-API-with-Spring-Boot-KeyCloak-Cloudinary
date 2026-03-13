@@ -1,6 +1,6 @@
 package com.example.pharmacy.apps.users.dto.response;
 
-public record UserResponseDto(
+public record UserResponse(
         String keyCloakId,
         String email
 ) {

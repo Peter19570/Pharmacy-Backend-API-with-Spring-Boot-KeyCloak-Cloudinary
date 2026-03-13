@@ -1,20 +1,21 @@
 package com.example.pharmacy.apps.profile.controller;
 
-import com.cloudinary.Api;
-import com.example.pharmacy.apps.common.dto.response.ApiResponseDto;
-import com.example.pharmacy.apps.profile.dto.request.ProfileRequestDto;
+import com.example.pharmacy.apps.common.dto.response.ApiResponse;
+import com.example.pharmacy.apps.profile.dto.request.ProfileRequest;
+import com.example.pharmacy.apps.profile.dto.response.ProfilePhotoResponse;
 import com.example.pharmacy.apps.profile.service.ProfilePhotoService;
 import com.example.pharmacy.apps.profile.service.ProfileService;
-import com.example.pharmacy.apps.users.dto.response.UserDetailsResponseDto;
+import com.example.pharmacy.apps.users.dto.response.UserDetailsResponse;
 import com.example.pharmacy.apps.users.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -26,30 +27,55 @@ public class ProfileController {
     private final UserService userService;
 
     @GetMapping("/profiles/me")
-    public ResponseEntity<ApiResponseDto<UserDetailsResponseDto>> getUser(@AuthenticationPrincipal Jwt jwt){
+    public ResponseEntity<ApiResponse<UserDetailsResponse>> getUserAndProfileDetails(
+            @AuthenticationPrincipal Jwt jwt){
         return ResponseEntity.status(HttpStatus.OK)
-                .body(new ApiResponseDto<>("User Details", userService.getUser(jwt)));
+                .body(new ApiResponse<>("User Details", userService.getUser(jwt)));
     }
 
     @PutMapping("/profiles/me")
-    public ResponseEntity<ApiResponseDto<UserDetailsResponseDto>> updateProfile(
-            @RequestBody ProfileRequestDto requestDto,
+    public ResponseEntity<ApiResponse<UserDetailsResponse>> updateProfileDetails(
+            @RequestBody ProfileRequest requestDto,
             @AuthenticationPrincipal Jwt jwt){
-        UserDetailsResponseDto responseDto = profileService.updateUser(jwt, requestDto);
+        UserDetailsResponse responseDto = profileService.updateUser(jwt, requestDto);
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(new ApiResponseDto<>("Profile Updated", responseDto));
+                .body(new ApiResponse<>("Profile Updated", responseDto));
     }
 
 
     @PostMapping("/profiles/me/photo")
-    public ResponseEntity<ApiResponseDto<UserDetailsResponseDto>> uploadProfile(
+    public ResponseEntity<ApiResponse<UserDetailsResponse>> uploadProfilePhoto(
             @RequestParam("file") MultipartFile file,
             @AuthenticationPrincipal Jwt jwt
     ){
-        UserDetailsResponseDto responseDto = profilePhotoService.uploadProfilePicture(jwt,file);
+        UserDetailsResponse responseDto = profilePhotoService.uploadProfilePicture(jwt,file);
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(new ApiResponseDto<>("Profile Photo Uploaded", responseDto));
+                .body(new ApiResponse<>("Profile Photo Uploaded", responseDto));
+    }
+
+    @DeleteMapping("/profiles/me/photo")
+    public ResponseEntity<Void> deleteProfilePhoto(
+            @AuthenticationPrincipal Jwt jwt){
+        profilePhotoService.removeProfilePhoto(jwt);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/profiles/photo/{id}")
+    public ResponseEntity<ApiResponse<ProfilePhotoResponse>> getProfilePhoto(
+            @PathVariable UUID id){
+        ProfilePhotoResponse responseDto = profilePhotoService.getProfilePhoto(id);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(new ApiResponse<>("Profile Photo", responseDto));
+    }
+
+    @GetMapping("/profiles/{id}")
+    public ResponseEntity<ApiResponse<UserDetailsResponse>> getOtherUser(@PathVariable UUID id){
+        UserDetailsResponse responseDto = userService.getOtherUser(id);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(new ApiResponse<>("User Details", responseDto));
     }
 }

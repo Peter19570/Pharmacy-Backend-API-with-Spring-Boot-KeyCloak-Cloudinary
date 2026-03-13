@@ -1,6 +1,6 @@
 package com.example.pharmacy.apps.common.dto.response;
 
-public record CloudinaryResponseDto(
+public record CloudinaryResponse(
         String url,
         String publicId
 ) {

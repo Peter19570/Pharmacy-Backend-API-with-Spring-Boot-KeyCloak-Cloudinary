@@ -4,7 +4,7 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
 
-public record ProfileRequestDto(
+public record ProfileRequest(
         @Min(0)
         @Max(150)
         Integer age,

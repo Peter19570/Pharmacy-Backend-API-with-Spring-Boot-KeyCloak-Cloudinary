@@ -1,26 +1,27 @@
 package com.example.pharmacy.apps.users.service;
 
 import com.example.pharmacy.apps.common.helper.UserState;
-import com.example.pharmacy.apps.profile.mapper.ProfileMapper;
 import com.example.pharmacy.apps.profile.model.Profile;
 import com.example.pharmacy.apps.profile.model.ProfilePhoto;
-import com.example.pharmacy.apps.profile.repo.ProfileRepo;
-import com.example.pharmacy.apps.users.dto.response.UserDetailsResponseDto;
-import com.example.pharmacy.apps.users.dto.response.UserResponseDto;
+import com.example.pharmacy.apps.users.dto.response.UserDetailsResponse;
+import com.example.pharmacy.apps.users.dto.response.UserResponse;
 import com.example.pharmacy.apps.users.mapper.UserMapper;
 import com.example.pharmacy.apps.users.model.User;
 import com.example.pharmacy.apps.users.repo.UserRepo;
-import jakarta.transaction.Transactional;
+import com.example.pharmacy.exception.custom.NotFoundException;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class UserService {
 
     private final UserRepo userRepo;
@@ -43,13 +44,19 @@ public class UserService {
         }
     }
 
-    public Page<UserResponseDto> allUsers(Pageable pageable){
+    public Page<UserResponse> allUsers(Pageable pageable){
         Page<User> userPage = userRepo.findAll(pageable);
         return userPage.map(userMapper::toDto);
     }
 
-    public UserDetailsResponseDto getUser(Jwt jwt){
+    public UserDetailsResponse getUser(Jwt jwt){
         return userMapper.toDetailsDto(userState.getCurrentUser(jwt));
+    }
+
+    public UserDetailsResponse getOtherUser(UUID id){
+        User user = userRepo.findById(id)
+                .orElseThrow(()-> new NotFoundException("User not found"));
+        return userMapper.toDetailsDto(user);
     }
 
 }

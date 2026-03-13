@@ -2,7 +2,7 @@ package com.example.pharmacy.apps.users.dto.response;
 
 import java.time.Instant;
 
-public record UserDetailsResponseDto(
+public record UserDetailsResponse(
         String email,
         String firstName,
         String lastName,

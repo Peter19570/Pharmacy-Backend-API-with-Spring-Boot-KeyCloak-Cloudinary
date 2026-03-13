@@ -2,10 +2,14 @@ package com.example.pharmacy.apps.users.model;
 
 import com.example.pharmacy.apps.common.model.BaseEntity;
 import com.example.pharmacy.apps.profile.model.Profile;
+import com.example.pharmacy.apps.sales.model.Sale;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.util.List;
 
 @Entity
 @Getter
@@ -23,7 +27,13 @@ public class User extends BaseEntity {
 
     private String lastName;
 
+    @JsonIgnore
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Profile profile;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "user")
+    private List<Sale> sales;
+
 
 }

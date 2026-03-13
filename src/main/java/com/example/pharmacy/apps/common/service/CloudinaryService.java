@@ -2,7 +2,7 @@ package com.example.pharmacy.apps.common.service;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
-import com.example.pharmacy.apps.common.dto.response.CloudinaryResponseDto;
+import com.example.pharmacy.apps.common.dto.response.CloudinaryResponse;
 import com.example.pharmacy.exception.custom.CloudinaryException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,7 +17,7 @@ public class CloudinaryService {
 
     private final Cloudinary cloudinary;
 
-    public CloudinaryResponseDto upload(
+    public CloudinaryResponse upload(
             MultipartFile file, String folder){
         try {
             Map<?, ?> result = cloudinary.uploader().upload(file.getBytes(),
@@ -27,7 +27,7 @@ public class CloudinaryService {
 
             String profileUrl = String.valueOf(result.get("secure_url"));
             String profileId = String.valueOf(result.get("public_id"));
-            return new CloudinaryResponseDto(profileUrl, profileId);
+            return new CloudinaryResponse(profileUrl, profileId);
 
         } catch (IOException e){
             throw new CloudinaryException("Upload failed");
