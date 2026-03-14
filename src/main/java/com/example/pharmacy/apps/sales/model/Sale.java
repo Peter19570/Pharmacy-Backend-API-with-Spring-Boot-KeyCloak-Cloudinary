@@ -47,6 +47,4 @@ public class Sale extends BaseEntity {
     @JsonIgnore
     @OneToMany(mappedBy = "sale", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<SaleItem> saleItems;
-
-
 }
