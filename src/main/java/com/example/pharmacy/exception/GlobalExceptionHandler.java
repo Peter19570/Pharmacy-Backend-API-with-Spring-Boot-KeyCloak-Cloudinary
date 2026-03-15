@@ -2,6 +2,7 @@ package com.example.pharmacy.exception;
 
 import com.example.pharmacy.apps.common.dto.response.ApiResponse;
 import com.example.pharmacy.exception.custom.CloudinaryException;
+import com.example.pharmacy.exception.custom.NotEnoughException;
 import com.example.pharmacy.exception.custom.NotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,5 +24,12 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(new ApiResponse<>("Cloudinary task failed", error.getMessage()));
+    }
+
+    @ExceptionHandler(NotEnoughException.class)
+    public ResponseEntity<ApiResponse<String>> handleNotEnoughError(NotEnoughException error){
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(new ApiResponse<>("Not Enough", error.getMessage()));
     }
 }

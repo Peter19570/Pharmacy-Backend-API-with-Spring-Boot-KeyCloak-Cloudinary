@@ -17,6 +17,7 @@ import com.example.pharmacy.apps.sales.mapper.SaleMapper;
 import com.example.pharmacy.apps.sales.model.Sale;
 import com.example.pharmacy.apps.sales.repo.SaleRepo;
 import com.example.pharmacy.exception.custom.LowCountException;
+import com.example.pharmacy.exception.custom.NotEnoughException;
 import com.example.pharmacy.exception.custom.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -97,6 +98,11 @@ public class SaleService {
         }
 
         sale.setTotalAmount(totalAmount);
+
+        if (request.amountPaid().compareTo(totalAmount) < 0){
+            throw new NotEnoughException("Not enough funds");
+        }
+        
         sale.setChangeDue(request.amountPaid().subtract(totalAmount));
 
         Sale savedSale = saleRepo.saveAndFlush(sale);
@@ -129,6 +135,7 @@ public class SaleService {
         return saleMapper.toDetailsDto(sale);
     }
 
+    @Transactional
     public void deleteSale(UUID id){
         Sale sale = saleRepo.findById(id)
                 .orElseThrow(()-> new NotFoundException("Sale not found"));
