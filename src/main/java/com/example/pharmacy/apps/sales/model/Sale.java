@@ -6,6 +6,7 @@ import com.example.pharmacy.apps.sales.enums.PaymentMethod;
 import com.example.pharmacy.apps.users.model.User;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -13,6 +14,7 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -45,6 +47,7 @@ public class Sale extends BaseEntity {
     private User user;
 
     @JsonIgnore
+    @Setter(AccessLevel.NONE)
     @OneToMany(mappedBy = "sale", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<SaleItem> saleItems;
+    private List<SaleItem> saleItems = new ArrayList<>();
 }

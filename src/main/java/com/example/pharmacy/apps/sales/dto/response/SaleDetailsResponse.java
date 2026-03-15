@@ -14,7 +14,6 @@ public record SaleDetailsResponse(
         BigDecimal amountPaid,
         BigDecimal changeDue,
         String paymentMethod,
-        String salesPersonName,
         List<SaleItemResponse> saleItems,
         Instant createdAt
 ) {

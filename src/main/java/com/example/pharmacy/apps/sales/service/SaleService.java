@@ -1,5 +1,6 @@
 package com.example.pharmacy.apps.sales.service;
 
+import com.example.pharmacy.apps.common.helper.TransCodeGenerator;
 import com.example.pharmacy.apps.common.helper.UserState;
 import com.example.pharmacy.apps.products.model.Product;
 import com.example.pharmacy.apps.products.repo.ProductRepo;
@@ -31,7 +32,9 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -46,34 +49,55 @@ public class SaleService {
     private final UserState userState;
 
     @Transactional
-//    @Retryable(value = ObjectOptimisticLockingFailureException.class, maxAttempts = 3)
-    public SaleDetailsResponse createSale(SaleRequest request, Jwt jwt){
-        Sale sale = saleMapper.toEntity(request);
-        List<SaleItemRequest> saleItemRequests = request.saleItems();
+    public SaleDetailsResponse createSale(SaleRequest request, Jwt jwt) {
 
-        BigDecimal itemsTotalAmount = BigDecimal.ZERO;
+        List<UUID> productIds = request.saleItems().stream()
+                .map(SaleItemRequest::productId)
+                .sorted()
+                .toList();
 
-        for (SaleItemRequest saleItemRequest : saleItemRequests){
-            Product product = productRepo.findById(saleItemRequest.productId())
-                    .orElseThrow(()-> new NotFoundException("Product Not Found"));
+        List<Product> products = productRepo.findAllByIdWithLock(productIds);
 
-            if (product.getQuantity() < saleItemRequest.quantitySold()){
-                throw new LowCountException
-                        (product.getName() + " insufficient, " + product.getQuantity() + " available");
-            }
-
-            SaleItem saleItem = saleItemMapper.toEntity(saleItemRequest, product);
-            SaleItem savedItems = saleItemRepo.save(saleItem);
-            SaleItemResponse response = saleItemMapper.toDto(savedItems);
-
-            sale.getSaleItems().add(savedItems);
-            int newProductQuantity = product.getQuantity() - saleItemRequest.quantitySold();
-            itemsTotalAmount = itemsTotalAmount.add(response.totalPrice());
+        if (products.size() != productIds.size()) {
+            throw new NotFoundException("One or more products not found");
         }
 
-        sale.setTotalAmount(itemsTotalAmount);
-        sale.setChangeDue(request.amountPaid().subtract(itemsTotalAmount));
+        Map<UUID, Product> productMap = products.stream()
+                .collect(Collectors.toMap(Product::getId, p -> p));
+
+        for (SaleItemRequest item : request.saleItems()) {
+            Product product = productMap.get(item.productId());
+            if (product.getQuantity() < item.quantitySold()) {
+                throw new LowCountException(
+                        product.getName() + " insufficient, " + product.getQuantity() + " available"
+                );
+            }
+        }
+
+        Sale sale = saleMapper.toEntity(request);
         sale.setUser(userState.getCurrentUser(jwt));
+        sale.setTransactionCode(TransCodeGenerator.generateTransactionCode());
+
+        BigDecimal totalAmount = BigDecimal.ZERO;
+
+        for (SaleItemRequest itemRequest : request.saleItems()) {
+            Product product = productMap.get(itemRequest.productId());
+
+            SaleItem saleItem = saleItemMapper.toEntity(itemRequest);
+            saleItem.setUnitPrice(product.getSellingPrice());
+            saleItem.setTotalPrice(product.getSellingPrice().multiply(BigDecimal.valueOf(itemRequest.quantitySold())));
+            saleItem.setSale(sale);
+            sale.getSaleItems().add(saleItem);
+
+            product.setQuantity(product.getQuantity() - itemRequest.quantitySold());
+
+            totalAmount = totalAmount.add(
+                    product.getSellingPrice().multiply(BigDecimal.valueOf(itemRequest.quantitySold()))
+            );
+        }
+
+        sale.setTotalAmount(totalAmount);
+        sale.setChangeDue(request.amountPaid().subtract(totalAmount));
 
         Sale savedSale = saleRepo.saveAndFlush(sale);
         return saleMapper.toDetailsDto(savedSale);

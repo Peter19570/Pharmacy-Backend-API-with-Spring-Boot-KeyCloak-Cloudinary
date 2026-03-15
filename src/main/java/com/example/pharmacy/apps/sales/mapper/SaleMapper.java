@@ -9,23 +9,17 @@ import org.mapstruct.*;
 import org.springframework.security.oauth2.jwt.Jwt;
 
 
-@Mapper(componentModel = "spring",
-        unmappedTargetPolicy = ReportingPolicy.IGNORE,
-        imports = {TransCodeGenerator.class}
-)
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface SaleMapper {
 
-    @Mapping(target = "transactionCode", expression = "java(TransCodeGenerator.generateTransactionCode())")
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "saleItems", ignore = true)
+    @Mapping(target = "totalAmount", ignore = true)
+    @Mapping(target = "changeDue", ignore = true)
+    @Mapping(target = "user", ignore = true)
     Sale toEntity(SaleRequest request);
 
     SaleResponse toDto(Sale sale);
 
     SaleDetailsResponse toDetailsDto(Sale sale);
-
-    @AfterMapping
-    default void linkSaleToSaleItem(@MappingTarget Sale sale){
-        if (sale.getSaleItems() != null){
-            sale.getSaleItems().forEach(saleItem -> saleItem.setSale(sale));
-        }
-    }
 }

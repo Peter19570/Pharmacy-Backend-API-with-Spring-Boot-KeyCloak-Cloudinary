@@ -10,13 +10,14 @@ import org.mapstruct.ReportingPolicy;
 
 import java.math.BigDecimal;
 
-@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE, imports = {BigDecimal.class})
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface SaleItemMapper {
 
-    @Mapping(target = "unitPrice", source = "product.sellingPrice")
-    @Mapping(target = "totalPrice",
-            expression = "java(product.getSellingPrice().multiply(BigDecimal.valueOf(request.quantitySold())))")
-    SaleItem toEntity(SaleItemRequest request, Product product);
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "sale", ignore = true)
+    @Mapping(target = "unitPrice", ignore = true)
+    @Mapping(target = "totalPrice", ignore = true)
+    SaleItem toEntity(SaleItemRequest request);
 
     SaleItemResponse toDto(SaleItem saleItem);
 }
