@@ -88,6 +88,7 @@ public class SaleService {
             saleItem.setUnitPrice(product.getSellingPrice());
             saleItem.setTotalPrice(product.getSellingPrice().multiply(BigDecimal.valueOf(itemRequest.quantitySold())));
             saleItem.setSale(sale);
+            saleItem.setProduct(product);
             sale.getSaleItems().add(saleItem);
 
             product.setQuantity(product.getQuantity() - itemRequest.quantitySold());
@@ -102,7 +103,7 @@ public class SaleService {
         if (request.amountPaid().compareTo(totalAmount) < 0){
             throw new NotEnoughException("Not enough funds");
         }
-        
+
         sale.setChangeDue(request.amountPaid().subtract(totalAmount));
 
         Sale savedSale = saleRepo.saveAndFlush(sale);
